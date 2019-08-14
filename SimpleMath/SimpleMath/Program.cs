@@ -8,9 +8,9 @@ namespace SimpleMath
     {
         public static void Main(string[] args)
         {
-            RefVariable x = tf.Variable(3, name: "x");
-            RefVariable y = tf.Variable(4, name: "y");
-            Tensor f = (Tensor) x * x * y + y + 2;
+            Tensor x = tf.Variable(3, name: "x");
+            Tensor y = tf.Variable(4, name: "y");
+            Tensor f = x * x * y + y + 2;
 
             Operation init = tf.global_variables_initializer();
 
