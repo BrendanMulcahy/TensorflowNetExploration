@@ -7,46 +7,52 @@ namespace Dnn
 {
     public class Program
     {
+        const int nInputs = 28 * 28; // MNIST image dimensions
+        const float learningRate = 0.01f;
+        const int sizeHidden1 = 300;
+        const int sizeHidden2 = 100;
+        const int numOutputs = 10;
+
         public static void Main(string[] args)
         {
-            int nInputs = 28 * 28; // MNIST image dimensions
-            var nHidden1 = 300;
-            var nHidden2 = 100;
-            var nOutputs = 10;
+            Tensor features = tf.placeholder(tf.float32, (-1, nInputs), "Features");
+            Tensor labels = tf.placeholder(tf.int64, new TensorShape(-1), "Labels");
 
-            Tensor X = tf.placeholder(tf.float32, (-1, nInputs), "X");
-            Tensor y = tf.placeholder(tf.int64, new TensorShape(-1), "y");
+            var (trainingOp, loss) = MakeGraph(features, labels);
 
-            using (tf.name_scope("dnn"))
+            Operation init = tf.global_variables_initializer();
+            Saver saver = tf.train.Saver();
+
+            var epochs = 20;
+            var batches = 50;
+
+            using (var session = tf.Session())
             {
-                Tensor hidden1 = tf.layers.dense(X, nHidden1, name: "hidden1");
-                Tensor hidden2 = tf.layers.dense(hidden1, nHidden2, name: "hidden2", activation: tf.nn.relu());
-                Tensor logits = tf.layers.dense(hidden2, nOutputs, name: "outputs");
-
-                using (tf.name_scope("loss"))
+                session.run(init);
+                for (int i = 0; i < epochs; i++)
                 {
-                    Tensor xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(y, logits);
-                    Tensor loss = tf.reduce_mean(xentropy, name: "loss");
-
-
-                    const float learningRate = 0.01f;
-
-                    using (tf.name_scope("train"))
+                    for (int j = 0; j < batches; j++)
                     {
-                        Optimizer optimizer = tf.train.GradientDescentOptimizer(learningRate);
-                        Operation trainingOp = optimizer.minimize(loss);
-
-                        using (tf.name_scope("eval")) // this nesting is getting crazy (?)
-                        {
-                            Tensor correct = gen_ops.in_top_k(logits, y, 1);
-                            Tensor accuracy = tf.reduce_mean(tf.cast(correct, tf.float32));
-
-                            var init = tf.global_variables_initializer();
-                            var saver = tf.train.Saver();
-                        }
+                        session.run(trainingOp); // todo feed data
                     }
                 }
             }
+        }
+
+        public static (Operation, Tensor) MakeGraph(Tensor features, Tensor labels)
+        {
+            Tensor hidden1 = tf.layers.dense(features, sizeHidden1, name: "Hidden1", activation: tf.nn.relu());
+            Tensor hidden2 = tf.layers.dense(hidden1, sizeHidden2, name: "Hidden2", activation: tf.nn.relu());
+            Tensor logits = tf.layers.dense(hidden2, numOutputs, name: "outputs");
+            Tensor label_probability = tf.nn.softmax(logits);
+
+            Tensor xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels, logits);
+            Tensor loss = tf.reduce_mean(xentropy, name: "loss");
+
+            Optimizer optimizer = tf.train.GradientDescentOptimizer(learningRate);
+            Operation trainingOp = optimizer.minimize(loss);
+
+            return (trainingOp, loss);
         }
 
         // Example of how to create a neuron layer from scratch, use tf.layers.dense instead

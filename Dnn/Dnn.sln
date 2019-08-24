@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dnn", "Dnn\Dnn.csproj", "{0D9B53EF-A5E9-42D0-9A90-27416E418B38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dnn", "Dnn\Dnn.csproj", "{0D9B53EF-A5E9-42D0-9A90-27416E418B38}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
